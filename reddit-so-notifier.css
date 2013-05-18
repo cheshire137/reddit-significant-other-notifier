@@ -191,7 +191,8 @@ h3 {
   font-size: 10px;
 }
 h3 a, h3 a:link, h3 a:active, h3 a:visited,
-small a, small a:link, small a:active, small a:visited {
+small a, small a:link, small a:active, small a:visited,
+p.date a, p.date a:link, p.date a:active, p.date a:visited {
   color: #909090;
   display: block;
 }
@@ -226,6 +227,10 @@ label + label {
 }
 .logo {
   margin-right: 20px;
+}
+p.date {
+  font-size: 12px;
+  font-weight: 300;
 }
 .pull-left {
   float: left;

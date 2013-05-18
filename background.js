@@ -42,8 +42,7 @@ var reddit_so_notifier = {
     var content_since_timestamp = [];
     for (var i=0; i<content.length; i++) {
       var item = content[i];
-      var reddit_ts = this.get_reddit_date(item).getTime();
-      console.log('comparing Reddit TS ' + reddit_ts + ' with last check TS ' + timestamp);
+      var reddit_ts = this.get_reddit_timestamp(item);
       if (reddit_ts > timestamp) {
         content_since_timestamp.push(item);
       }
@@ -67,17 +66,22 @@ var reddit_so_notifier = {
     return false;
   },
 
-  store_notification: function(tag, title, body, url, callback) {
+  notification_compare: function(a, b) {
+    if (a.date < b.date) {
+      return 1;
+    }
+    return a.date > b.date ? -1 : 0;
+  },
+
+  store_notification: function(notification, callback) {
     var me = this;
     chrome.storage.sync.get('reddit_so_notifier_notifications', function(nots) {
       nots = nots.reddit_so_notifier_notifications || [];
-      while (Object.keys(nots).length >= me.notifications_to_store) {
-        console.log('deleting stored notification because there are ' + Object.keys(nots).length);
-        delete nots[0];
+      nots = nots.slice(0, me.notifications_to_store);
+      if (!me.have_stored_notification(notification.tag, nots)) {
+        nots.push(notification);
       }
-      if (!me.have_stored_notification(tag, nots)) {
-        nots.push({title: title, body: body, url: url, tag: tag});
-      }
+      nots.sort(me.notification_compare);
       chrome.storage.sync.set(
         {'reddit_so_notifier_notifications': nots},
         function() {
@@ -87,17 +91,19 @@ var reddit_so_notifier = {
     });
   },
 
-  display_notification: function(tag, title, body, url) {
-    var notification = new Notification(title, {body: body, tag: tag});
+  display_notification: function(notification) {
+    var notification = new Notification(notification.title,
+                                        {body: notification.body,
+                                         tag: notification.tag});
     notification.onclick = function() {
-      window.open(url);
+      window.open(notification.url);
       notification.close();
     };
     notification.show();
   },
 
-  get_reddit_date: function(item) {
-    return new Date(parseInt(item.data.created_utc + '000', 10));
+  get_reddit_timestamp: function(item) {
+    return new Date(parseInt(item.data.created_utc + '000', 10)).getTime();
   },
 
   notify_about_content_item: function(item, get_title, get_body, get_url) {
@@ -105,10 +111,12 @@ var reddit_so_notifier = {
     var title = get_title(item);
     var body = get_body(item);
     var url = get_url(item);
-    var date = this.get_reddit_date(item);
+    var timestamp = this.get_reddit_timestamp(item);
+    var notification = {tag: tag, title: title, body: body, url: url,
+                        timestamp: timestamp};
     var me = this;
-    this.store_notification(tag, title, body, url, function() {
-      me.display_notification(tag, title, body, url);
+    this.store_notification(notification, function() {
+      me.display_notification(notification);
     });
   },
 
@@ -216,7 +224,7 @@ var reddit_so_notifier = {
   },
 
   setup_post_and_comment_checker: function() {
-    console.log('checking for posts and comments at ' + (new Date().getTime()));
+    console.log('checking for posts and comments at ' + (new Date()));
     this.check_for_posts_and_comments();
     var me = this;
     this.content_checker_interval = setInterval(function() {

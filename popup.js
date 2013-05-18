@@ -47,6 +47,31 @@ var reddit_so_notifier_popup = {
     });
   },
 
+  get_date_str: function(timestamp) {
+    if (!timestamp) {
+      return '';
+    }
+    var date = new Date(timestamp);
+    var year = date.getFullYear();
+    var day = date.getDate();
+    var month = date.getMonth() + 1;
+    var hours = date.getHours();
+    var minutes = date.getMinutes();
+    var am_pm = 'AM';
+    if (hours >= 12) {
+      hours -= 12;
+      am_pm = 'PM';
+    }
+    if (hours === 0) {
+      hours = 12;
+    }
+    if (minutes < 10) {
+      minutes = '0' + minutes;
+    }
+    return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ' ' +
+           am_pm;
+  },
+
   display_notification: function(notification) {
     var li = $('<li></li>');
     var h3 = $('<h3></h3>');
@@ -58,11 +83,17 @@ var reddit_so_notifier_popup = {
     title_link.click(on_link_click);
     h3.append(title_link);
     li.append(h3);
-    var p = $('<p></p>');
+    var body_p = $('<p class="body"></p>');
     var body_link = $('<a href="">' + notification.body + '</a>');
     body_link.click(on_link_click);
-    p.append(body_link);
-    li.append(p);
+    body_p.append(body_link);
+    li.append(body_p);
+    var date_p = $('<p class="date"></p>');
+    var date = this.get_date_str(notification.timestamp);
+    var date_link = $('<a href="">' + date + '</a>');
+    date_link.click(on_link_click);
+    date_p.append(date_link);
+    li.append(date_p);
     $('ul').append(li);
     $('#focus-stealer').focus();
   },
