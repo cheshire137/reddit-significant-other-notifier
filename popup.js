@@ -73,7 +73,7 @@ var reddit_so_notifier_popup = {
   },
 
   display_notification: function(notification) {
-    var li = $('<li class="hidden"></li>');
+    var li = $('<li class="hidden" id="' + notification.tag + '"></li>');
     var h3 = $('<h3></h3>');
     var title_link = $('<a href="">' + notification.title + '</a>');
     var on_link_click = function() {
@@ -108,7 +108,11 @@ var reddit_so_notifier_popup = {
     footer_p.append(subreddit_link);
     li.append(footer_p);
 
-    $('ul').append(li);
+    if ($('ul li').length > 0) {
+      $('ul').prepend(li);
+    } else {
+      $('ul').append(li);
+    }
     li.fadeIn();
     $('#focus-stealer').focus();
   },
@@ -118,7 +122,11 @@ var reddit_so_notifier_popup = {
     chrome.storage.sync.get('reddit_so_notifier_notifications', function(nots) {
       nots = nots.reddit_so_notifier_notifications || [];
       for (var i=0; i<nots.length; i++) {
-        me.display_notification(nots[i]);
+        var notification = nots[i];
+        if ($('ul li#' + notification.tag).length > 0) {
+          continue;
+        }
+        me.display_notification(notification);
       }
     });
   },
@@ -133,4 +141,10 @@ var reddit_so_notifier_popup = {
 $(function() {
   reddit_so_notifier_popup.on_popup_opened();
   chrome.extension.sendRequest({action: 'check_for_content'});
+});
+
+chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
+  if (request.action == 'content_updated') {
+    reddit_so_notifier_popup.display_notifications();
+  }
 });

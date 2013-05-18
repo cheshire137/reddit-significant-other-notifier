@@ -8,4 +8,4 @@ made automatically since that would go against [the Reddit rules](http://www.red
 
 * Add badge showing notification count to popup.
 * Allow tracking multiple significant others.
-* When new notifications found because popup was opened, update the popup while it's still open to show those new notifications.
+* Link post to Reddit thread, not the post's link.
