@@ -66,7 +66,7 @@ var reddit_so_notifier = {
       console.log('notifying about post:');
       console.log(post);
       var notification = webkitNotifications.createNotification(
-        'icon48.png', 'New Reddit Post', post.data.title
+        'icon48.png', 'New Reddit Post by ' + post.data.author, post.data.title
       );
       notification.onclick = function() {
         window.open(post.data.url);
