@@ -86,4 +86,5 @@ var reddit_so_notifier_popup = {
 
 $(function() {
   reddit_so_notifier_popup.on_popup_opened();
+  chrome.extension.sendRequest({action: 'check_for_content'});
 });

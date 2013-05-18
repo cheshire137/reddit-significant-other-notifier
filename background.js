@@ -1,6 +1,6 @@
 var reddit_so_notifier = {
   content_checker_interval: null,
-  ms_between_checks: 60 * 5 * 1000,
+  ms_between_checks: 60 * 1 * 1000,
   notifications_to_store: 10,
 
   get_url: function(content_type, callback) {
@@ -42,7 +42,9 @@ var reddit_so_notifier = {
     var content_since_timestamp = [];
     for (var i=0; i<content.length; i++) {
       var item = content[i];
-      if (item.data.created_utc > timestamp) {
+      var reddit_ts = this.get_reddit_date(item).getTime();
+      console.log('comparing Reddit TS ' + reddit_ts + ' with last check TS ' + timestamp);
+      if (reddit_ts > timestamp) {
         content_since_timestamp.push(item);
       }
     }
@@ -94,11 +96,16 @@ var reddit_so_notifier = {
     notification.show();
   },
 
+  get_reddit_date: function(item) {
+    return new Date(parseInt(item.data.created_utc + '000', 10));
+  },
+
   notify_about_content_item: function(item, get_title, get_body, get_url) {
     var tag = item.data.name;
     var title = get_title(item);
     var body = get_body(item);
     var url = get_url(item);
+    var date = this.get_reddit_date(item);
     var me = this;
     this.store_notification(tag, title, body, url, function() {
       me.display_notification(tag, title, body, url);
@@ -106,7 +113,7 @@ var reddit_so_notifier = {
   },
 
   notify_about_content: function(content, get_title, get_body, get_url) {
-    for (var i=0; i<content.length; i++) {
+    for (var i=content.length-1; i>=0; i--) {
       this.notify_about_content_item(content[i], get_title, get_body, get_url);
     }
   },
@@ -195,7 +202,7 @@ var reddit_so_notifier = {
   setup_post_checker: function() {
     this.check_for_posts();
     var me = this;
-    content_checker_interval = setInterval(function() {
+    this.content_checker_interval = setInterval(function() {
       me.check_for_posts();
     }, this.ms_between_checks);
   },
@@ -203,15 +210,16 @@ var reddit_so_notifier = {
   setup_comment_checker: function() {
     this.check_for_comments();
     var me = this;
-    content_checker_interval = setInterval(function() {
+    this.content_checker_interval = setInterval(function() {
       me.check_for_comments();
     }, this.ms_between_checks);
   },
 
   setup_post_and_comment_checker: function() {
+    console.log('checking for posts and comments at ' + (new Date().getTime()));
     this.check_for_posts_and_comments();
     var me = this;
-    content_checker_interval = setInterval(function() {
+    this.content_checker_interval = setInterval(function() {
       me.check_for_posts_and_comments();
     }, this.ms_between_checks);
   },
@@ -232,3 +240,9 @@ var reddit_so_notifier = {
 };
 
 reddit_so_notifier.setup_content_checkers();
+
+chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
+  if (request.action == 'check_for_content') {
+    reddit_so_notifier.setup_content_checkers();
+  }
+});
