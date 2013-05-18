@@ -19,6 +19,28 @@
           <small>Specify the Reddit user name of your schmootzy poo</small>
         </p>
       </div>
+      <hr>
+      <fieldset>
+        <legend>Notifications</legend>
+        <div class="controls">
+          <label for="posts_and_comments">
+            <input type="radio" name="notifications" id="posts_and_comments" value="posts_and_comments">
+            Posts and comments (default)
+          </label>
+          <label for="posts_only">
+            <input type="radio" name="notifications" id="posts_only" value="posts_only">
+            Posts only
+          </label>
+          <label for="comments_only">
+            <input type="radio" name="notifications" id="comments_only" value="comments_only">
+            Comments only
+          </label>
+        </div>
+        <p class="help-block">
+          Choose whether to see notifications about new posts and comments, just
+          new posts, or just new comments.
+        </p>
+      </fieldset>
       <div class="form-actions">
         <a href="#save-options" class="btn">Save Options</a>
       </div>

@@ -28,7 +28,8 @@ function clear_last_check_timestamp(callback) {
 function save_options() {
   var user_name = $.trim($('#user_name').val());
   $('#user_name').val(user_name);
-  var options = {user_name: user_name};
+  var notifications = $('input[name="notifications"]:checked').val();
+  var options = {user_name: user_name, notifications: notifications};
   var status_area = $('#status-message');
   chrome.storage.sync.set({'reddit_so_notifier_options': options}, function() {
     clear_last_check_timestamp(function() {
@@ -50,6 +51,13 @@ function restore_options() {
       $('#user_name').val(opts.user_name);
     } else {
       $('#user_name').val('');
+    }
+    if (opts.notifications) {
+      var selector = 'input[name="notifications"]' +
+                     '[value="' + opts.notifications + '"]';
+      $(selector).attr('checked', 'checked');
+    } else {
+      $('#posts_and_comments').attr('checked', 'checked');
     }
   });
 }

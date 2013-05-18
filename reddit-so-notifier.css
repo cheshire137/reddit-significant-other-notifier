@@ -104,6 +104,28 @@ body.options label {
 .clearfix {
   display: inline-block;
 }
+.control-group .help-block {
+  margin-left: 13em;
+  margin-top: 0;
+}
+.control-group label {
+  width: 13em;
+}
+fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+fieldset .help-block {
+  font-size: 12px;
+}
+fieldset legend {
+  margin: 0 0 10px 0;
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #999;
+  font-style: italic;
+}
 .footer {
   font-size: 12px;
   color: #888;
@@ -130,8 +152,6 @@ h2 {
 }
 .help-block {
   color: #666;
-  margin-left: 13em;
-  margin-top: 0;
 }
 .help-block > small {
   padding-left: 5px;
@@ -153,8 +173,8 @@ input[type="text"] {
   font-size: 14px;
   padding: 0.4em;
 }
-label {
-  width: 13em;
+label + label {
+  margin-left: 1.5em;
 }
 .logo {
   margin-right: 20px;
