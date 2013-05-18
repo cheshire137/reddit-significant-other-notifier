@@ -76,27 +76,38 @@ var reddit_so_notifier_popup = {
     var li = $('<li class="hidden" id="' + notification.tag + '"></li>');
     var h3 = $('<h3></h3>');
     var title_link = $('<a href="">' + notification.title + '</a>');
-    var on_link_click = function() {
+    var open_content_url = function() {
       chrome.tabs.create({url: notification.url});
       return false;
     };
-    title_link.click(on_link_click);
+    title_link.click(open_content_url);
     h3.append(title_link);
     li.append(h3);
 
     var body_p = $('<p class="body"></p>');
     var body_link = $('<a href="">' + notification.body + '</a>');
-    body_link.click(on_link_click);
+    body_link.click(open_content_url);
     body_p.append(body_link);
     li.append(body_p);
 
     var footer_p = $('<p class="footer"></p>');
     var date = this.get_date_str(notification.timestamp);
     var date_link = $('<a href="">' + date + '</a>');
-    date_link.click(on_link_click);
+    date_link.click(open_content_url);
     footer_p.append(date_link);
 
     var separator = $('<span class="separator">&middot;</span>');
+    footer_p.append(separator);
+
+    var thread_link = $('<a href="">thread</a>');
+    thread_link.attr('title', 'View all comments');
+    thread_link.click(function() {
+      chrome.tabs.create({url: notification.thread_url});
+      return false;
+    });
+    footer_p.append(thread_link);
+
+    separator = $('<span class="separator">&middot;</span>');
     footer_p.append(separator);
 
     var subreddit_link = $('<a href="">' + notification.subreddit + '</a>');

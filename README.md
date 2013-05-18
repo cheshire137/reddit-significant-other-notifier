@@ -8,4 +8,3 @@ made automatically since that would go against [the Reddit rules](http://www.red
 
 * Add badge showing notification count to popup.
 * Allow tracking multiple significant others.
-* Link post to Reddit thread, not the post's link.

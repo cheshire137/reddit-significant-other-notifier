@@ -130,7 +130,7 @@ var reddit_so_notifier = {
     return 'http://www.reddit.com/r/' + subreddit;
   },
 
-  notify_about_content_item: function(content, i, get_title, get_body, get_url, callback) {
+  notify_about_content_item: function(content, i, get_title, get_body, get_url, get_thread_url, callback) {
     var item = content[i];
     var tag = item.data.name;
     var subreddit = item.data.subreddit;
@@ -138,10 +138,11 @@ var reddit_so_notifier = {
     var title = get_title(item);
     var body = get_body(item);
     var url = get_url(item);
+    var thread_url = get_thread_url(item);
     var timestamp = this.get_reddit_timestamp(item);
     var notification = {tag: tag, title: title, body: body, url: url,
                         timestamp: timestamp, subreddit: subreddit,
-                        subreddit_url: subreddit_url};
+                        subreddit_url: subreddit_url, thread_url: thread_url};
     var me = this;
     this.store_notification(notification, function(was_new) {
       if (was_new) {
@@ -152,19 +153,19 @@ var reddit_so_notifier = {
         if (callback) callback();
       } else {
         me.notify_about_content_item(content, i-1, get_title, get_body,
-                                     get_url, callback);
+                                     get_url, get_thread_url, callback);
       }
     });
   },
 
-  notify_about_content: function(content, get_title, get_body, get_url, callback) {
+  notify_about_content: function(content, get_title, get_body, get_url, get_thread_url, callback) {
     if (content.length < 1) {
       this.is_checking = false;
       if (callback) callback();
       return;
     }
     this.notify_about_content_item(content, content.length - 1, get_title,
-                                   get_body, get_url, callback);
+                                   get_body, get_url, get_thread_url, callback);
   },
 
   get_post_title: function(post) {
@@ -175,6 +176,11 @@ var reddit_so_notifier = {
 
   get_post_url: function(post) { return post.data.url; },
 
+  get_post_thread_url: function(post) {
+    return 'http://www.reddit.com/r/' + post.data.subreddit +
+           '/comments/' + post.data.id;
+  },
+
   notify_about_posts: function(posts, callback) {
     var me = this;
     this.notify_about_content(
@@ -182,6 +188,7 @@ var reddit_so_notifier = {
       me.get_post_title,
       me.get_post_body,
       me.get_post_url,
+      me.get_post_thread_url,
       callback
     );
   },
@@ -214,6 +221,12 @@ var reddit_so_notifier = {
            '/comments/' + id + '/' + link_title + '/' + name;
   },
 
+  get_comment_thread_url: function(comment) {
+    var id = comment.data.link_id.split('_')[1];
+    return 'http://www.reddit.com/r/' + comment.data.subreddit +
+           '/comments/' + id;
+  },
+
   notify_about_comments: function(comments, callback) {
     var me = this;
     this.notify_about_content(
@@ -221,6 +234,7 @@ var reddit_so_notifier = {
       me.get_comment_title,
       me.get_comment_body,
       me.get_comment_url,
+      me.get_comment_thread_url,
       callback
     );
   },
@@ -257,6 +271,12 @@ var reddit_so_notifier = {
           return me.get_comment_url(item);
         }
         return me.get_post_url(item);
+      },
+      function(item) {
+        if (me.get_content_type(item) === 'comment') {
+          return me.get_comment_thread_url(item);
+        }
+        return me.get_post_thread_url(item);
       },
       callback
     );

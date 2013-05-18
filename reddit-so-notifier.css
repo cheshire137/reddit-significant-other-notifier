@@ -269,7 +269,7 @@ small {
 }
 span.separator {
   display: inline-block;
-  margin: 0 1em;
+  margin: 0 5px;
 }
 #status-message {
   position: absolute;
