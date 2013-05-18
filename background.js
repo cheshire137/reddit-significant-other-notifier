@@ -1,6 +1,5 @@
 var reddit_so_notifier = {
-  post_checker_interval: null,
-  comment_checker_interval: null,
+  content_checker_interval: null,
   ms_between_checks: 60 * 5 * 1000,
 
   get_url: function(content_type, callback) {
@@ -119,9 +118,7 @@ var reddit_so_notifier = {
         } else if (content.length > 0) {
           new_content = [content[0]];
         }
-        me.update_last_check_timestamp(function() {
-          callback(new_content);
-        });
+        callback(new_content);
       });
     });
   },
@@ -129,21 +126,37 @@ var reddit_so_notifier = {
   check_for_posts: function() {
     var me = this;
     this.check_for_content('submitted', function(new_posts) {
-      me.notify_about_posts(new_posts);
+      me.update_last_check_timestamp(function() {
+        me.notify_about_posts(new_posts);
+      });
     });
   },
 
   check_for_comments: function() {
     var me = this;
     this.check_for_content('comments', function(new_comments) {
-      me.notify_about_comments(new_comments);
+      me.update_last_check_timestamp(function() {
+        me.notify_about_comments(new_comments);
+      });
+    });
+  },
+
+  check_for_posts_and_comments: function() {
+    var me = this;
+    this.check_for_content('submitted', function(new_posts) {
+      me.notify_about_posts(new_posts);
+      me.check_for_content('comments', function(new_comments) {
+        me.update_last_check_timestamp(function() {
+          me.notify_about_comments(new_comments);
+        });
+      });
     });
   },
 
   setup_post_checker: function() {
     this.check_for_posts();
     var me = this;
-    post_checker_interval = setInterval(function() {
+    content_checker_interval = setInterval(function() {
       me.check_for_posts();
     }, this.ms_between_checks);
   },
@@ -151,8 +164,16 @@ var reddit_so_notifier = {
   setup_comment_checker: function() {
     this.check_for_comments();
     var me = this;
-    comment_checker_interval = setInterval(function() {
+    content_checker_interval = setInterval(function() {
       me.check_for_comments();
+    }, this.ms_between_checks);
+  },
+
+  setup_post_and_comment_checker: function() {
+    this.check_for_posts_and_comments();
+    var me = this;
+    content_checker_interval = setInterval(function() {
+      me.check_for_posts_and_comments();
     }, this.ms_between_checks);
   },
 
@@ -160,11 +181,12 @@ var reddit_so_notifier = {
     var me = this;
     chrome.storage.sync.get('reddit_so_notifier_options', function(opts) {
       opts = opts.reddit_so_notifier_options || {};
-      if (opts.notifications !== 'comments_only') {
+      if (opts.notifications === 'comments_only') {
         me.setup_post_checker();
-      }
-      if (opts.notifications !== 'posts_only') {
+      } else if (opts.notifications === 'posts_only') {
         me.setup_comment_checker();
+      } else {
+        me.setup_post_and_comment_checker();
       }
     });
   }

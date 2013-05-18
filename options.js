@@ -38,7 +38,7 @@ function save_options() {
           status_area.fadeOut();
         }, 2000);
         var bg_page = chrome.extension.getBackgroundPage();
-        bg_page.reddit_so_notifier.check_for_posts();
+        bg_page.reddit_so_notifier.setup_content_checkers();
       });
     });
   });
