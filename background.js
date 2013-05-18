@@ -1,7 +1,7 @@
 var reddit_so_notifier = {
   content_checker_interval: null,
-  ms_between_checks: 60 * 1 * 1000,
   notifications_to_store: 5,
+  is_checking: false,
 
   get_url: function(content_type, callback) {
     chrome.storage.sync.get('reddit_so_notifier_options', function(opts) {
@@ -77,15 +77,21 @@ var reddit_so_notifier = {
     var me = this;
     chrome.storage.sync.get('reddit_so_notifier_notifications', function(nots) {
       nots = nots.reddit_so_notifier_notifications || [];
+      var was_new = false;
       if (!me.have_stored_notification(notification.tag, nots)) {
         nots.push(notification);
+        was_new = true;
       }
       nots = nots.sort(me.notification_compare);
-      nots = nots.slice(0, me.notifications_to_store);
+      if (nots.length > me.notifications_to_store) {
+        nots = nots.slice(0, me.notifications_to_store);
+      }
+      console.log('notifications being stored:');
+      console.log(nots);
       chrome.storage.sync.set(
         {'reddit_so_notifier_notifications': nots},
         function() {
-          callback();
+          callback(was_new);
         }
       );
     });
@@ -105,7 +111,8 @@ var reddit_so_notifier = {
     return new Date(parseInt(item.data.created_utc + '000', 10)).getTime();
   },
 
-  notify_about_content_item: function(item, get_title, get_body, get_url) {
+  notify_about_content_item: function(content, i, get_title, get_body, get_url) {
+    var item = content[i];
     var tag = item.data.name;
     var title = get_title(item);
     var body = get_body(item);
@@ -114,23 +121,49 @@ var reddit_so_notifier = {
     var notification = {tag: tag, title: title, body: body, url: url,
                         timestamp: timestamp};
     var me = this;
-    this.store_notification(notification, function() {
-      me.display_notification(notification);
+    console.log('notification:');
+    console.log(notification);
+    this.store_notification(notification, function(was_new) {
+      if (was_new) {
+        me.display_notification(notification);
+      }
+      if (i == 0) {
+        console.log('finished checking');
+        me.is_checking = false;
+      } else {
+        console.log('notifying about next piece of new content ' + (i-1));
+        me.notify_about_content_item(content, i-1, get_title, get_body,
+                                     get_url);
+      }
     });
   },
 
   notify_about_content: function(content, get_title, get_body, get_url) {
-    for (var i=content.length-1; i>=0; i--) {
-      this.notify_about_content_item(content[i], get_title, get_body, get_url);
+    if (content.length < 1) {
+      console.log('no new content, finished checking');
+      this.is_checking = false;
+      return;
     }
+    console.log('notifying about piece of new content ' + (content.length - 1));
+    this.notify_about_content_item(content, content.length - 1, get_title,
+                                   get_body, get_url);
   },
 
+  get_post_title: function(post) {
+    return 'New Reddit Post by ' + post.data.author;
+  },
+
+  get_post_body: function(post) { return post.data.title; },
+
+  get_post_url: function(post) { return post.data.url; },
+
   notify_about_posts: function(posts) {
+    var me = this;
     this.notify_about_content(
       posts,
-      function(post) { return 'New Reddit Post by ' + post.data.author; },
-      function(post) { return post.data.title; },
-      function(post) { return post.data.url; }
+      me.get_post_title,
+      me.get_post_body,
+      me.get_post_url
     );
   },
 
@@ -140,28 +173,72 @@ var reddit_so_notifier = {
                       split(' ').slice(0, -1).join('_');
   },
 
+  get_comment_title: function(comment) {
+    return 'New Reddit Comment by ' + comment.data.author;
+  },
+
+  get_comment_body: function(comment) {
+    var limit = 100;
+    var body = $.trim(comment.data.body);
+    if (body.length <= limit) {
+      return body;
+    }
+    return body.substring(0, limit).split(' ').slice(0, -1).join(' ') +
+           '...';
+  },
+
+  get_comment_url: function(comment) {
+    var id = comment.data.link_id.split('_')[1];
+    var link_title = this.get_link_title_for_url(comment.data.link_title);
+    var name = comment.data.name.split('_')[1];
+    return 'http://www.reddit.com/r/' + comment.data.subreddit +
+           '/comments/' + id + '/' + link_title + '/' + name;
+  },
+
   notify_about_comments: function(comments) {
     var me = this;
     this.notify_about_content(
       comments,
-      function(comment) {
-        return 'New Reddit Comment by ' + comment.data.author;
-      },
-      function(comment) {
-        var limit = 100;
-        var body = $.trim(comment.data.body);
-        if (body.length <= limit) {
-          return body;
+      me.get_comment_title,
+      me.get_comment_body,
+      me.get_comment_url
+    );
+  },
+
+  get_content_type: function(item) {
+    var prefix = item.kind;
+    if (prefix === 't1') {
+      return 'comment';
+    }
+    if (prefix === 't3') {
+      return 'post';
+    }
+    return 'unknown';
+  },
+
+  notify_about_posts_and_comments: function(posts_and_comments) {
+    var me = this;
+    console.log('notifying about posts and comments:');
+    console.log(posts_and_comments);
+    this.notify_about_content(
+      posts_and_comments,
+      function(item) {
+        if (me.get_content_type(item) === 'comment') {
+          return me.get_comment_title(item);
         }
-        return body.substring(0, limit).split(' ').slice(0, -1).join(' ') +
-               '...';
+        return me.get_post_title(item);
       },
-      function(comment) {
-        var id = comment.data.link_id.split('_')[1];
-        var link_title = me.get_link_title_for_url(comment.data.link_title);
-        var name = comment.data.name.split('_')[1];
-        return 'http://www.reddit.com/r/' + comment.data.subreddit +
-               '/comments/' + id + '/' + link_title + '/' + name;
+      function(item) {
+        if (me.get_content_type(item) === 'comment') {
+          return me.get_comment_body(item);
+        }
+        return me.get_post_body(item);
+      },
+      function(item) {
+        if (me.get_content_type(item) === 'comment') {
+          return me.get_comment_url(item);
+        }
+        return me.get_post_url(item);
       }
     );
   },
@@ -170,6 +247,8 @@ var reddit_so_notifier = {
     var me = this;
     this.get_latest_content(content_type, function(results) {
       if (results.error) {
+        console.error(results.error);
+        callback([]);
         return;
       }
       var content = results.data;
@@ -186,6 +265,11 @@ var reddit_so_notifier = {
   },
 
   check_for_posts: function() {
+    if (this.is_checking) {
+      console.log('already in the process of checking posts');
+      return;
+    }
+    this.is_checking = true;
     var me = this;
     this.check_for_content('submitted', function(new_posts) {
       me.update_last_check_timestamp(function() {
@@ -195,6 +279,11 @@ var reddit_so_notifier = {
   },
 
   check_for_comments: function() {
+    if (this.is_checking) {
+      console.log('already in the process of checking comments');
+      return;
+    }
+    this.is_checking = true;
     var me = this;
     this.check_for_content('comments', function(new_comments) {
       me.update_last_check_timestamp(function() {
@@ -204,51 +293,66 @@ var reddit_so_notifier = {
   },
 
   check_for_posts_and_comments: function() {
+    if (this.is_checking) {
+      console.log('already in the process of checking posts and comments');
+      return;
+    }
+    this.is_checking = true;
+    console.log('checking for posts and comments at ' + new Date());
     var me = this;
     this.check_for_content('submitted', function(new_posts) {
-      me.notify_about_posts(new_posts);
       me.check_for_content('comments', function(new_comments) {
         me.update_last_check_timestamp(function() {
-          me.notify_about_comments(new_comments);
+          console.log(new_posts.concat(new_comments));
+          me.notify_about_posts_and_comments(new_posts.concat(new_comments));
         });
       });
     });
   },
 
-  setup_post_checker: function() {
+  setup_post_checker: function(frequency) {
+    clearInterval(this.content_checker_interval);
     this.check_for_posts();
     var me = this;
     this.content_checker_interval = setInterval(function() {
       me.check_for_posts();
-    }, this.ms_between_checks);
+    }, frequency);
   },
 
-  setup_comment_checker: function() {
+  setup_comment_checker: function(frequency) {
+    clearInterval(this.content_checker_interval);
     this.check_for_comments();
     var me = this;
     this.content_checker_interval = setInterval(function() {
       me.check_for_comments();
-    }, this.ms_between_checks);
+    }, frequency);
   },
 
-  setup_post_and_comment_checker: function() {
+  setup_post_and_comment_checker: function(frequency) {
+    clearInterval(this.content_checker_interval);
     this.check_for_posts_and_comments();
     var me = this;
     this.content_checker_interval = setInterval(function() {
       me.check_for_posts_and_comments();
-    }, this.ms_between_checks);
+    }, frequency);
+  },
+
+  get_frequency_ms: function(opts) {
+    var frequency = opts.frequency || 1;
+    return frequency * 60 * 1000;
   },
 
   setup_content_checkers: function() {
     var me = this;
     chrome.storage.sync.get('reddit_so_notifier_options', function(opts) {
       opts = opts.reddit_so_notifier_options || {};
+      var frequency = me.get_frequency_ms(opts);
       if (opts.notifications === 'comments_only') {
-        me.setup_comment_checker();
+        me.setup_comment_checker(frequency);
       } else if (opts.notifications === 'posts_only') {
-        me.setup_post_checker();
+        me.setup_post_checker(frequency);
       } else {
-        me.setup_post_and_comment_checker();
+        me.setup_post_and_comment_checker(frequency);
       }
     });
   }
