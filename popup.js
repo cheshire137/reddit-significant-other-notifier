@@ -26,22 +26,6 @@
 // })();
 
 var reddit_so_notifier_popup = {
-  setup_user_link: function() {
-    chrome.storage.sync.get('reddit_so_notifier_options', function(opts) {
-      opts = opts.reddit_so_notifier_options || {};
-      if (opts.user_name) {
-        var url = 'http://www.reddit.com/user/' + opts.user_name;
-        $('h2 a').click(function() {
-          chrome.tabs.create({url: url});
-          return false;
-        });
-        $('h2 a span').text(opts.user_name);
-      } else {
-        $('h2 a').hide();
-      }
-    });
-  },
-
   setup_options_link: function() {
     $('a#options-link').blur().click(function() {
       chrome.tabs.create({url: chrome.extension.getURL("options.html")});
@@ -49,9 +33,39 @@ var reddit_so_notifier_popup = {
     });
   },
 
+  display_notification: function(notification) {
+    var li = $('<li></li>');
+    var h3 = $('<h3></h3>');
+    var title_link = $('<a href="">' + notification.title + '</a>');
+    var on_link_click = function() {
+      chrome.tabs.create({url: notification.url});
+      return false;
+    };
+    title_link.click(on_link_click);
+    h3.append(title_link);
+    li.append(h3);
+    var p = $('<p></p>');
+    var body_link = $('<a href="">' + notification.body + '</a>');
+    body_link.click(on_link_click);
+    p.append(body_link);
+    li.append(p);
+    $('ul').append(li);
+    $('#focus-stealer').focus();
+  },
+
+  display_notifications: function() {
+    var me = this;
+    chrome.storage.sync.get('reddit_so_notifier_notifications', function(nots) {
+      nots = nots.reddit_so_notifier_notifications || [];
+      for (var i=0; i<nots.length; i++) {
+        me.display_notification(nots[i]);
+      }
+    });
+  },
+
   on_popup_opened: function() {
     this.setup_options_link();
-    this.setup_user_link();
+    this.display_notifications();
   }
 };
 

@@ -1,6 +1,9 @@
-a, a:link, a:visited, a:active, a:hover, a:focus {
-  color: #696969;
+a, a:link, a:visited, a:active {
+  color: #369;
   text-decoration: none;
+}
+a:hover, a:focus {
+  color: #f01400;
 }
 a.btn {
   display: block;
@@ -93,6 +96,25 @@ body.options label {
   display: inline-block;
   vertical-align: middle;
 }
+body.popup {
+  background-color: white;
+  padding: 0;
+  min-width: 19em;
+}
+body.popup footer {
+  background-color: #F8F8F8;
+  padding: 10px;
+}
+body.popup header {
+  background-color: #F8F8F8;
+  padding: 10px;
+}
+body.popup header h1 {
+  line-height: 18px;
+}
+body.popup section {
+  padding: 10px;
+}
 .clearfix:after {
   content: ".";
   display: block;
@@ -126,6 +148,13 @@ fieldset legend {
   color: #999;
   font-style: italic;
 }
+#focus-stealer {
+  position: absolute;
+  left: -900px;
+  top: 0;
+  width: 1px;
+  height: 1px;
+}
 .footer {
   font-size: 12px;
   color: #888;
@@ -139,6 +168,13 @@ h1 {
   font-size: 16px;
   margin: 0;
 }
+h1 small {
+  display: block;
+  text-transform: uppercase;
+  font-size: 12px;
+  font-weight: 300;
+  color: #999;
+}
 h1 img, h1 span {
   display: block;
 }
@@ -146,6 +182,15 @@ h2 {
   font-size: 12px;
   color: #909090;
   margin: 0;
+}
+h3 {
+  margin: 0;
+  font-size: 10px;
+}
+h3 a, h3 a:link, h3 a:active, h3 a:visited,
+small a, small a:link, small a:active, small a:visited {
+  color: #909090;
+  display: block;
 }
 .header {
   margin-bottom: 40px;
@@ -192,4 +237,32 @@ small {
   position: absolute;
   width: 100%;
   top: 2.3em;
+}
+ul {
+  margin: 0;
+  padding: 0;
+}
+ul li {
+  list-style: none;
+  margin: 5px 0 0 0;
+  padding: 5px 0 0 0;
+  border-bottom: 1px solid #fff;
+}
+ul li p {
+  margin: 0;
+}
+ul li p a {
+  display: block;
+}
+ul li + li {
+  border-top: 1px solid #eee;
+}
+ul li:first-child {
+  margin-top: 0;
+  padding-top: 0;
+}
+ul li:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 0;
 }
