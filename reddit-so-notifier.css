@@ -113,6 +113,7 @@ body.popup {
 body.popup footer {
   background-color: #F8F8F8;
   padding: 10px;
+  text-align: center;
 }
 body.popup footer a {
   display: inline;
@@ -120,9 +121,12 @@ body.popup footer a {
 body.popup header {
   background-color: #F8F8F8;
   padding: 10px;
+  width: 100%;
+  box-sizing: border-box;
 }
 body.popup header h1 {
   line-height: 18px;
+  padding-top: 6px;
 }
 body.popup section {
   padding: 10px;
@@ -197,10 +201,20 @@ h3 {
   font-size: 10px;
 }
 h3 a, h3 a:link, h3 a:active, h3 a:visited,
-small a, small a:link, small a:active, small a:visited,
-p.date a, p.date a:link, p.date a:active, p.date a:visited {
-  color: #909090;
+small a, small a:link, small a:active, small a:visited {
   display: block;
+}
+h3 a, h3 a:link, h3 a:active, h3 a:visited,
+small a, small a:link, small a:active, small a:visited,
+p.footer a, p.footer a:link, p.footer a:active, p.footer a:visited {
+  color: #909090;
+}
+h3 a:hover, h3 a:focus,
+p.footer a:hover, p.footer a:focus {
+  color: #868686;
+}
+small a:hover, small a:focus {
+  text-decoration: underline;
 }
 .header {
   margin-bottom: 40px;
@@ -268,12 +282,16 @@ ul {
 }
 ul li {
   list-style: none;
-  margin: 5px 0 0 0;
-  padding: 5px 0 0 0;
+  margin: 8px 0 0 0;
+  padding: 10px 0 0 0;
   border-bottom: 1px solid #fff;
 }
 ul li p {
   margin: 0;
+}
+ul li p.body {
+  margin: 10px 0;
+  line-height: 1.4;
 }
 ul li p a {
   display: block;
