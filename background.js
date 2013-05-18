@@ -77,7 +77,7 @@ var reddit_so_notifier = {
     var me = this;
     chrome.storage.sync.get('reddit_so_notifier_notifications', function(nots) {
       nots = nots.reddit_so_notifier_notifications || [];
-      nots = nots.slice(0, me.notifications_to_store);
+      nots = nots.slice(0, me.notifications_to_store - 1);
       if (!me.have_stored_notification(notification.tag, nots)) {
         nots.push(notification);
       }
@@ -135,7 +135,14 @@ var reddit_so_notifier = {
     );
   },
 
+  get_link_title_for_url: function(link_title) {
+    var punc_regex = /[\.,-\/#!$%\^&\*;:{}=\-`~()]/g;
+    return link_title.toLowerCase().replace(punc_regex, '').substring(0, 50).
+                      split(' ').slice(0, -1).join('_');
+  },
+
   notify_about_comments: function(comments) {
+    var me = this;
     this.notify_about_content(
       comments,
       function(comment) {
@@ -152,8 +159,11 @@ var reddit_so_notifier = {
       },
       function(comment) {
         var id = comment.data.link_id.split('_')[1];
+        var link_title = me.get_link_title_for_url(comment.data.link_title);
+        var name = comment.data.name.split('_')[1];
+        console.log('comment URL: ' + 'http://www.reddit.com/r/' + comment.data.subreddit + '/comments/' + id + '/' + link_title + '/' + name);
         return 'http://www.reddit.com/r/' + comment.data.subreddit +
-               '/comments/' + id;
+               '/comments/' + id + '/' + link_title + '/' + name;
       }
     );
   },
