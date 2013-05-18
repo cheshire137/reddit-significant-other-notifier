@@ -1,0 +1,20 @@
+{
+  "manifest_version": 2,
+  "name": "Reddit Significant Other Notifier",
+  "description": "Specify the user name of your significant other. This will display a notification with your significant other's new posts.",
+  "version": "0.0.0.1",
+  "permissions": [
+    "background", "storage", "http://www.reddit.com/", "notifications"
+  ],
+  "background": {
+    "scripts": ["jquery-2.0.0.min.js", "background.js"]
+  },
+  "content_security_policy": "script-src 'self' https://ssl.google-analytics.com; object-src 'self'",
+  "icons": {
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "web_accessible_resources": [
+    "icon48.png"
+  ]
+}
