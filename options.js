@@ -29,7 +29,9 @@ function save_options() {
   var user_name = $.trim($('#user_name').val());
   $('#user_name').val(user_name);
   var notifications = $('input[name="notifications"]:checked').val();
-  var options = {user_name: user_name, notifications: notifications};
+  var frequency = $('#frequency').val();
+  var options = {user_name: user_name, notifications: notifications,
+                 frequency: frequency};
   var status_area = $('#status-message');
   chrome.storage.sync.set({'reddit_so_notifier_options': options}, function() {
     clear_last_check_timestamp(function() {
@@ -37,8 +39,6 @@ function save_options() {
         setTimeout(function() {
           status_area.fadeOut();
         }, 2000);
-        var bg_page = chrome.extension.getBackgroundPage();
-        bg_page.reddit_so_notifier.setup_content_checkers();
       });
     });
   });
@@ -59,11 +59,17 @@ function restore_options() {
     } else {
       $('#posts_and_comments').attr('checked', 'checked');
     }
+    if (opts.frequency) {
+      $('#frequency').val(opts.frequency);
+      $('#frequency').change();
+    }
   });
 }
 
 document.addEventListener('DOMContentLoaded', restore_options);
+
 $('a[href="#save-options"]').click(save_options);
+
 $('#frequency').on('change', function() {
   var frequency = $(this).val();
   if (frequency == 60) {
