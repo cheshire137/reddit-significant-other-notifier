@@ -1,7 +1,7 @@
 var reddit_so_notifier = {
   content_checker_interval: null,
   ms_between_checks: 60 * 1 * 1000,
-  notifications_to_store: 10,
+  notifications_to_store: 5,
 
   get_url: function(content_type, callback) {
     chrome.storage.sync.get('reddit_so_notifier_options', function(opts) {
@@ -67,36 +67,40 @@ var reddit_so_notifier = {
   },
 
   notification_compare: function(a, b) {
-    if (a.date < b.date) {
+    if (a.timestamp < b.timestamp) {
       return 1;
     }
-    return a.date > b.date ? -1 : 0;
+    return a.timestamp > b.timestamp ? -1 : 0;
   },
 
   store_notification: function(notification, callback) {
     var me = this;
     chrome.storage.sync.get('reddit_so_notifier_notifications', function(nots) {
       nots = nots.reddit_so_notifier_notifications || [];
-      nots = nots.slice(0, me.notifications_to_store - 1);
       if (!me.have_stored_notification(notification.tag, nots)) {
         nots.push(notification);
       }
-      nots.sort(me.notification_compare);
+      nots = nots.sort(me.notification_compare);
+      console.log('sorted notifications:');
+      console.log(nots);
+      nots = nots.slice(0, me.notifications_to_store);
+      console.log('trimmed notifications:');
+      console.log(nots);
       chrome.storage.sync.set(
         {'reddit_so_notifier_notifications': nots},
         function() {
+          console.log('stored notifications');
           callback();
         }
       );
     });
   },
 
-  display_notification: function(notification) {
-    var notification = new Notification(notification.title,
-                                        {body: notification.body,
-                                         tag: notification.tag});
+  display_notification: function(data) {
+    var notification = new Notification(data.title, {body: data.body,
+                                                     tag: data.tag});
     notification.onclick = function() {
-      window.open(notification.url);
+      window.open(data.url);
       notification.close();
     };
     notification.show();
