@@ -27,8 +27,22 @@
 
 var reddit_so_notifier_popup = {
   setup_options_link: function() {
-    $('a#options-link').blur().click(function() {
+    $('a[href="#options"]').click(function() {
       chrome.tabs.create({url: chrome.extension.getURL("options.html")});
+      return false;
+    });
+  },
+
+  setup_clear_notifications_link: function() {
+    $('a[href="#clear-notifications"]').click(function() {
+      chrome.storage.sync.set(
+        {'reddit_so_notifier_notifications': []},
+        function() {
+          $('ul li').fadeOut(function() {
+            $(this).remove();
+          });
+        }
+      );
       return false;
     });
   },
@@ -65,6 +79,7 @@ var reddit_so_notifier_popup = {
 
   on_popup_opened: function() {
     this.setup_options_link();
+    this.setup_clear_notifications_link();
     this.display_notifications();
   }
 };

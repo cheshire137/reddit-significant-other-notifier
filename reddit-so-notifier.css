@@ -105,6 +105,9 @@ body.popup footer {
   background-color: #F8F8F8;
   padding: 10px;
 }
+body.popup footer a {
+  display: inline;
+}
 body.popup header {
   background-color: #F8F8F8;
   padding: 10px;
