@@ -126,15 +126,22 @@ var reddit_so_notifier = {
     return new Date(parseInt(item.data.created_utc + '000', 10)).getTime();
   },
 
+  get_subreddit_url: function(subreddit) {
+    return 'http://www.reddit.com/r/' + subreddit;
+  },
+
   notify_about_content_item: function(content, i, get_title, get_body, get_url) {
     var item = content[i];
     var tag = item.data.name;
+    var subreddit = item.data.subreddit;
+    var subreddit_url = this.get_subreddit_url(subreddit);
     var title = get_title(item);
     var body = get_body(item);
     var url = get_url(item);
     var timestamp = this.get_reddit_timestamp(item);
     var notification = {tag: tag, title: title, body: body, url: url,
-                        timestamp: timestamp};
+                        timestamp: timestamp, subreddit: subreddit,
+                        subreddit_url: subreddit_url};
     var me = this;
     this.store_notification(notification, function(was_new) {
       if (was_new) {

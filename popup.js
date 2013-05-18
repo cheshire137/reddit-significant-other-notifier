@@ -73,7 +73,7 @@ var reddit_so_notifier_popup = {
   },
 
   display_notification: function(notification) {
-    var li = $('<li></li>');
+    var li = $('<li class="hidden"></li>');
     var h3 = $('<h3></h3>');
     var title_link = $('<a href="">' + notification.title + '</a>');
     var on_link_click = function() {
@@ -83,18 +83,33 @@ var reddit_so_notifier_popup = {
     title_link.click(on_link_click);
     h3.append(title_link);
     li.append(h3);
+
     var body_p = $('<p class="body"></p>');
     var body_link = $('<a href="">' + notification.body + '</a>');
     body_link.click(on_link_click);
     body_p.append(body_link);
     li.append(body_p);
-    var date_p = $('<p class="date"></p>');
+
+    var footer_p = $('<p class="footer"></p>');
     var date = this.get_date_str(notification.timestamp);
     var date_link = $('<a href="">' + date + '</a>');
     date_link.click(on_link_click);
-    date_p.append(date_link);
-    li.append(date_p);
+    footer_p.append(date_link);
+
+    var separator = $('<span class="separator">&middot;</span>');
+    footer_p.append(separator);
+
+    var subreddit_link = $('<a href="">' + notification.subreddit + '</a>');
+    subreddit_link.attr('title', 'View this subreddit');
+    subreddit_link.click(function() {
+      chrome.tabs.create({url: notification.subreddit_url});
+      return false;
+    });
+    footer_p.append(subreddit_link);
+    li.append(footer_p);
+
     $('ul').append(li);
+    li.fadeIn();
     $('#focus-stealer').focus();
   },
 

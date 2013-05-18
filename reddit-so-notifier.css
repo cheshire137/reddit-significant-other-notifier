@@ -92,6 +92,15 @@ body.options h1 {
 body.options .controls {
   margin-bottom: 14px;
 }
+body.options .footer {
+  font-size: 12px;
+  color: #888;
+  margin-top: 40px;
+}
+body.options .footer span {
+  display: inline-block;
+  margin: 0 1em;
+}
 body.options label {
   display: inline-block;
   vertical-align: middle;
@@ -164,15 +173,6 @@ fieldset legend {
   width: 1px;
   height: 1px;
 }
-.footer {
-  font-size: 12px;
-  color: #888;
-  margin-top: 40px;
-}
-.footer span {
-  display: inline-block;
-  margin: 0 1em;
-}
 h1 {
   font-size: 16px;
   margin: 0;
@@ -237,9 +237,12 @@ label + label {
 .logo {
   margin-right: 20px;
 }
-p.date {
+p.footer {
   font-size: 12px;
   font-weight: 300;
+}
+p.footer a {
+  display: inline-block;
 }
 .pull-left {
   float: left;
@@ -249,6 +252,10 @@ p.date {
 }
 small {
   font-size: 12px;
+}
+span.separator {
+  display: inline-block;
+  margin: 0 1em;
 }
 #status-message {
   position: absolute;
