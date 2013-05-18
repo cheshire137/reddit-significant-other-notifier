@@ -12,13 +12,16 @@
         <hr>
       </div>
       <p id="status-message" class="hidden alert"></p>
-      <div class="control-group">
-        <label for="user_name">Significant other user name:</label>
-        <input type="text" id="user_name">
-        <p class="help-block">
-          <small>Specify the Reddit user name of your schmootzy poo</small>
-        </p>
-      </div>
+      <fieldset>
+        <legend>User Name</legend>
+        <div class="control-group">
+          <label for="user_name">Significant other user name:</label>
+          <input type="text" id="user_name">
+          <p class="help-block">
+            <small>Specify the Reddit user name of your schmootzy poo</small>
+          </p>
+        </div>
+      </fieldset>
       <hr>
       <fieldset>
         <legend>Notifications</legend>
@@ -40,6 +43,22 @@
           Choose whether to see notifications about new posts and comments, just
           new posts, or just new comments.
         </p>
+      </fieldset>
+      <hr>
+      <fieldset>
+        <legend>Frequency</legend>
+        <div class="control-group">
+          Check every
+          <input id="frequency" type="range" min="1" max="60" value="1" step="1">
+          <span class="help-inline">
+            <span id="frequency_number"></span>
+            <span id="frequency_unit">minute</span>
+          </span>
+          <p class="help-block flush-left">
+            <small>Choose the frequency with which the extension checks for new
+                   posts/comments</small>
+          </p>
+        </div>
       </fieldset>
       <div class="form-actions">
         <a href="#save-options" class="btn">Save Options</a>

@@ -64,3 +64,13 @@ function restore_options() {
 
 document.addEventListener('DOMContentLoaded', restore_options);
 $('a[href="#save-options"]').click(save_options);
+$('#frequency').on('change', function() {
+  var frequency = $(this).val();
+  if (frequency == 60) {
+    $('#frequency_number').text('');
+    $('#frequency_unit').text('hour');
+    return;
+  }
+  $('#frequency_number').text(frequency > 1 ? frequency : '');
+  $('#frequency_unit').text(frequency > 1 ? 'minutes' : 'minute');
+});
