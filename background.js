@@ -52,7 +52,10 @@ var reddit_so_notifier = {
       var notification = webkitNotifications.createNotification(
         'icon48.png', 'New Reddit Post', post.data.title
       );
-      console.log(notification);
+      notification.onclick = function() {
+        window.open(post.data.url);
+        notification.close();
+      };
       notification.show();
     }
   },
