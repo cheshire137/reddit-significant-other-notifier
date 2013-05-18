@@ -15,16 +15,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+function clear_last_check_timestamp(callback) {
+  chrome.storage.local.get('reddit_so_notifier', function(data) {
+    data = data.reddit_so_notifier || {};
+    data.last_check_timestamp = null;
+    chrome.storage.local.set({'reddit_so_notifier': data}, function() {
+      callback();
+    });
+  });
+}
+
 function save_options() {
   var user_name = $.trim($('#user_name').val());
   $('#user_name').val(user_name);
   var options = {user_name: user_name};
   var status_area = $('#status-message');
   chrome.storage.sync.set({'reddit_so_notifier_options': options}, function() {
-    status_area.text('Okay, got it!').fadeIn(function() {
-      setTimeout(function() {
-        status_area.fadeOut();
-      }, 2000);
+    clear_last_check_timestamp(function() {
+      status_area.text('Okay, got it!').fadeIn(function() {
+        setTimeout(function() {
+          status_area.fadeOut();
+        }, 2000);
+      });
     });
   });
 }

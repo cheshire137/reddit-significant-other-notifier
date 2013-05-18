@@ -1,17 +1,33 @@
 var reddit_so_notifier = {
-  get_url: function() {
-    return 'http://www.reddit.com/user/cheshire137/submitted.json?sort=new';
+  post_checker_interval: null,
+  ms_between_checks: 60 * 5 * 1000,
+
+  get_url: function(callback) {
+    chrome.storage.sync.get('reddit_so_notifier_options', function(opts) {
+      opts = opts.reddit_so_notifier_options || {};
+      if (opts.user_name) {
+        callback('http://www.reddit.com/user/' + opts.user_name +
+                 '/submitted.json?sort=new');
+      } else {
+        callback('');
+      }
+    });
   },
 
   get_latest_posts: function(callback) {
-    var url = this.get_url();
-    console.log(url);
-    $.getJSON(url, function(data) {
-      console.log(data);
-      var posts = data.data.children;
-      console.log(posts);
-      console.log(posts[0]);
-      callback(posts);
+    this.get_url(function(url) {
+      if (url.length < 1) {
+        callback({posts: [], error: 'No user name set in options'});
+        return;
+      }
+      console.log(url);
+      $.getJSON(url, function(data) {
+        console.log(data);
+        var posts = data.data.children;
+        console.log(posts);
+        console.log(posts[0]);
+        callback({posts: posts, error: false});
+      });
     });
   },
 
@@ -62,7 +78,12 @@ var reddit_so_notifier = {
 
   check_for_posts: function() {
     var me = this;
-    this.get_latest_posts(function(posts) {
+    console.log('checking for posts');
+    this.get_latest_posts(function(results) {
+      if (results.error) {
+        return;
+      }
+      var posts = results.posts;
       console.log('got latest posts');
       me.get_last_check_timestamp(function(timestamp) {
         console.log('last check timestamp:');
@@ -80,11 +101,15 @@ var reddit_so_notifier = {
         });
       });
     });
+  },
+
+  setup_post_checker: function() {
+    this.check_for_posts();
+    var me = this;
+    post_checker_interval = setInterval(function() {
+      me.check_for_posts();
+    }, this.ms_between_checks);
   }
 };
 
-reddit_so_notifier.check_for_posts();
-setInterval(function() {
-  console.log('checking for posts');
-  reddit_so_notifier.check_for_posts();
-}, 60 * 5 * 1000);
+reddit_so_notifier.setup_post_checker();

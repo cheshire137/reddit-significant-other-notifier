@@ -147,7 +147,7 @@ hr {
 }
 input[type="text"] {
   width: 20em;
-  font-family: "Helvetica", "Arial", sans-serif;
+  font-family: "Andale Mono", "Courier New", monospace;
   font-weight: 300;
   line-height: 1.6;
   font-size: 14px;
