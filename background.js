@@ -20,12 +20,8 @@ var reddit_so_notifier = {
         callback({posts: [], error: 'No user name set in options'});
         return;
       }
-      console.log(url);
       $.getJSON(url, function(data) {
-        console.log(data);
         var posts = data.data.children;
-        console.log(posts);
-        console.log(posts[0]);
         callback({posts: posts, error: false});
       });
     });
@@ -63,10 +59,9 @@ var reddit_so_notifier = {
   notify_about_posts: function(posts) {
     for (var i=0; i<posts.length; i++) {
       var post = posts[i];
-      console.log('notifying about post:');
-      console.log(post);
-      var notification = webkitNotifications.createNotification(
-        'icon48.png', 'New Reddit Post by ' + post.data.author, post.data.title
+      var notification = new Notification(
+        'New Reddit Post by ' + post.data.author,
+        {body: post.data.title, tag: post.data.name}
       );
       notification.onclick = function() {
         window.open(post.data.url);
@@ -78,16 +73,12 @@ var reddit_so_notifier = {
 
   check_for_posts: function() {
     var me = this;
-    console.log('checking for posts');
     this.get_latest_posts(function(results) {
       if (results.error) {
         return;
       }
       var posts = results.posts;
-      console.log('got latest posts');
       me.get_last_check_timestamp(function(timestamp) {
-        console.log('last check timestamp:');
-        console.log(timestamp);
         var new_posts = [];
         if (timestamp) {
           new_posts = me.filter_posts_since_last_check(posts, timestamp);
@@ -95,8 +86,6 @@ var reddit_so_notifier = {
           new_posts = [posts[0]];
         }
         me.update_last_check_timestamp(function() {
-          console.log('new posts:');
-          console.log(new_posts);
           me.notify_about_posts(new_posts);
         });
       });
