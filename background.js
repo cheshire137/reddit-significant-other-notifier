@@ -81,15 +81,10 @@ var reddit_so_notifier = {
         nots.push(notification);
       }
       nots = nots.sort(me.notification_compare);
-      console.log('sorted notifications:');
-      console.log(nots);
       nots = nots.slice(0, me.notifications_to_store);
-      console.log('trimmed notifications:');
-      console.log(nots);
       chrome.storage.sync.set(
         {'reddit_so_notifier_notifications': nots},
         function() {
-          console.log('stored notifications');
           callback();
         }
       );
@@ -165,7 +160,6 @@ var reddit_so_notifier = {
         var id = comment.data.link_id.split('_')[1];
         var link_title = me.get_link_title_for_url(comment.data.link_title);
         var name = comment.data.name.split('_')[1];
-        console.log('comment URL: ' + 'http://www.reddit.com/r/' + comment.data.subreddit + '/comments/' + id + '/' + link_title + '/' + name);
         return 'http://www.reddit.com/r/' + comment.data.subreddit +
                '/comments/' + id + '/' + link_title + '/' + name;
       }
@@ -238,7 +232,6 @@ var reddit_so_notifier = {
   },
 
   setup_post_and_comment_checker: function() {
-    console.log('checking for posts and comments at ' + (new Date()));
     this.check_for_posts_and_comments();
     var me = this;
     this.content_checker_interval = setInterval(function() {
