@@ -128,10 +128,27 @@ var reddit_so_notifier_popup = {
     $('#focus-stealer').focus();
   },
 
+  remove_irrelevant_notifications: function(relevant_notifications) {
+    var relevant_tags = [];
+    for (var i=0; i<relevant_notifications.length; i++) {
+      relevant_tags.push(relevant_notifications[i].tag);
+    }
+    $('ul li').each(function() {
+      var li = $(this);
+      var tag = li.attr('id');
+      if (relevant_tags.indexOf(tag) === -1) {
+        li.fadeOut(function() {
+          $(this).remove();
+        });
+      }
+    });
+  },
+
   display_notifications: function() {
     var me = this;
     chrome.storage.sync.get('reddit_so_notifier_notifications', function(nots) {
       nots = nots.reddit_so_notifier_notifications || [];
+      me.remove_irrelevant_notifications(nots);
       for (var i=0; i<nots.length; i++) {
         var notification = nots[i];
         if ($('ul li#' + notification.tag).length > 0) {

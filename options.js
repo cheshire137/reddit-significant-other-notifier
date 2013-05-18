@@ -40,6 +40,17 @@ function save_options() {
           status_area.fadeOut();
         }, 2000);
       });
+      var content_types = [];
+      if (notifications !== 'posts_only') {
+        content_types.push('comment');
+      }
+      if (notifications !== 'comments_only') {
+        content_types.push('post');
+      }
+      chrome.extension.sendRequest({
+        action: 'filter_notifications',
+        content_types: content_types
+      });
     });
   });
 }

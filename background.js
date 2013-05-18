@@ -90,6 +90,29 @@ var reddit_so_notifier = {
     return a.timestamp > b.timestamp ? -1 : 0;
   },
 
+  filter_out_irrelevant_notifications: function(content_types, notifications) {
+    var relevant_notifications = [];
+    for (var i=0; i<notifications.length; i++) {
+      var notification = notifications[i];
+      if (content_types.indexOf(notification.content_type) !== -1) {
+        relevant_notifications.push(notification);
+      }
+    }
+    return relevant_notifications;
+  },
+
+  filter_notifications: function(content_types, callback) {
+    var me = this;
+    chrome.storage.sync.get('reddit_so_notifier_notifications', function(nots) {
+      nots = nots.reddit_so_notifier_notifications || [];
+      nots = me.filter_out_irrelevant_notifications(content_types, nots);
+      chrome.storage.sync.set(
+        {'reddit_so_notifier_notifications': nots},
+        function() { callback(); }
+      );
+    });
+  },
+
   store_notification: function(notification, callback) {
     var me = this;
     chrome.storage.sync.get('reddit_so_notifier_notifications', function(nots) {
@@ -100,9 +123,7 @@ var reddit_so_notifier = {
         was_new = true;
       }
       nots = nots.sort(me.notification_compare);
-      if (nots.length > me.notifications_to_store) {
-        nots = nots.slice(0, me.notifications_to_store);
-      }
+      nots = nots.slice(0, me.notifications_to_store);
       chrome.storage.sync.set(
         {'reddit_so_notifier_notifications': nots},
         function() {
@@ -139,10 +160,12 @@ var reddit_so_notifier = {
     var body = get_body(item);
     var url = get_url(item);
     var thread_url = get_thread_url(item);
+    var content_type = this.get_content_type(item);
     var timestamp = this.get_reddit_timestamp(item);
     var notification = {tag: tag, title: title, body: body, url: url,
                         timestamp: timestamp, subreddit: subreddit,
-                        subreddit_url: subreddit_url, thread_url: thread_url};
+                        subreddit_url: subreddit_url, thread_url: thread_url,
+                        content_type: content_type};
     var me = this;
     this.store_notification(notification, function(was_new) {
       if (was_new) {
@@ -185,10 +208,18 @@ var reddit_so_notifier = {
     var me = this;
     this.notify_about_content(
       posts,
-      me.get_post_title,
-      me.get_post_body,
-      me.get_post_url,
-      me.get_post_thread_url,
+      function(post) {
+        return me.get_post_title(post);
+      },
+      function(post) {
+        return me.get_post_body(post);
+      },
+      function(post) {
+        return me.get_post_url(post);
+      },
+      function(post) {
+        return me.get_post_thread_url(post);
+      },
       callback
     );
   },
@@ -231,10 +262,18 @@ var reddit_so_notifier = {
     var me = this;
     this.notify_about_content(
       comments,
-      me.get_comment_title,
-      me.get_comment_body,
-      me.get_comment_url,
-      me.get_comment_thread_url,
+      function(comment) {
+        return me.get_comment_title(comment);
+      },
+      function(comment) {
+        return me.get_comment_body(comment);
+      },
+      function(comment) {
+        return me.get_comment_url(comment);
+      },
+      function(comment) {
+        return me.get_comment_thread_url(comment);
+      },
       callback
     );
   },
@@ -399,8 +438,12 @@ var reddit_so_notifier = {
 reddit_so_notifier.setup_content_checkers();
 
 chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
-  if (request.action == 'check_for_content') {
+  if (request.action === 'check_for_content') {
     reddit_so_notifier.setup_content_checkers(function() {
+      chrome.extension.sendRequest({action: 'content_updated'});
+    });
+  } else if (request.action === 'filter_notifications') {
+    reddit_so_notifier.filter_notifications(request.content_types, function() {
       chrome.extension.sendRequest({action: 'content_updated'});
     });
   }
