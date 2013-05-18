@@ -8,5 +8,4 @@ made automatically since that would go against [the Reddit rules](http://www.red
 
 * Add a popup with a badge showing notification count, so if you don't see a desktop notification, you can see it in the popup.
 * Allow tracking multiple significant others.
-* Allow tracking new comments.
 * Add options to change how often the extension checks for new content.
