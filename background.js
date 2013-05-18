@@ -103,8 +103,6 @@ var reddit_so_notifier = {
       if (nots.length > me.notifications_to_store) {
         nots = nots.slice(0, me.notifications_to_store);
       }
-      console.log('notifications being stored:');
-      console.log(nots);
       chrome.storage.sync.set(
         {'reddit_so_notifier_notifications': nots},
         function() {
@@ -138,17 +136,13 @@ var reddit_so_notifier = {
     var notification = {tag: tag, title: title, body: body, url: url,
                         timestamp: timestamp};
     var me = this;
-    console.log('notification:');
-    console.log(notification);
     this.store_notification(notification, function(was_new) {
       if (was_new) {
         me.display_notification(notification);
       }
       if (i == 0) {
-        console.log('finished checking');
         me.is_checking = false;
       } else {
-        console.log('notifying about next piece of new content ' + (i-1));
         me.notify_about_content_item(content, i-1, get_title, get_body,
                                      get_url);
       }
@@ -157,11 +151,9 @@ var reddit_so_notifier = {
 
   notify_about_content: function(content, get_title, get_body, get_url) {
     if (content.length < 1) {
-      console.log('no new content, finished checking');
       this.is_checking = false;
       return;
     }
-    console.log('notifying about piece of new content ' + (content.length - 1));
     this.notify_about_content_item(content, content.length - 1, get_title,
                                    get_body, get_url);
   },
@@ -235,8 +227,6 @@ var reddit_so_notifier = {
 
   notify_about_posts_and_comments: function(posts_and_comments) {
     var me = this;
-    console.log('notifying about posts and comments:');
-    console.log(posts_and_comments);
     this.notify_about_content(
       posts_and_comments,
       function(item) {
@@ -283,7 +273,6 @@ var reddit_so_notifier = {
 
   check_for_posts: function() {
     if (this.is_checking) {
-      console.log('already in the process of checking posts');
       return;
     }
     this.is_checking = true;
@@ -297,7 +286,6 @@ var reddit_so_notifier = {
 
   check_for_comments: function() {
     if (this.is_checking) {
-      console.log('already in the process of checking comments');
       return;
     }
     this.is_checking = true;
@@ -311,16 +299,13 @@ var reddit_so_notifier = {
 
   check_for_posts_and_comments: function() {
     if (this.is_checking) {
-      console.log('already in the process of checking posts and comments');
       return;
     }
     this.is_checking = true;
-    console.log('checking for posts and comments at ' + new Date());
     var me = this;
     this.check_for_content('submitted', function(new_posts) {
       me.check_for_content('comments', function(new_comments) {
         me.update_last_check_timestamp(function() {
-          console.log(new_posts.concat(new_comments));
           me.notify_about_posts_and_comments(new_posts.concat(new_comments));
         });
       });
