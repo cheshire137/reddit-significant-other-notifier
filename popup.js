@@ -73,6 +73,53 @@ var reddit_so_notifier_popup = {
            am_pm;
   },
 
+  on_upvote_fail: function(upvote_link, reason) {
+    upvote_link.addClass('failure');
+    upvote_link.next('span.upvote-fail-reason').remove();
+    var reason_span = $('<span class="upvote-fail-reason hidden"></span>');
+    reason_span.text(reason);
+    reason_span.insertAfter(upvote_link).fadeIn();
+  },
+
+  on_upvote_click: function(tag, upvote_link) {
+    var me_url = 'http://www.reddit.com/api/me.json';
+    var me = this;
+    var dir = upvote_link.hasClass('success') ? 0 : 1; // undo vote or upvote
+    $.getJSON(me_url, function(me_data) {
+      if (!me_data.data) {
+        // User is not logged in to Reddit
+        me.on_upvote_fail(upvote_link, 'You are not logged in to Reddit');
+        return;
+      }
+      var modhash = me_data.data.modhash;
+      var upvote_url = 'http://www.reddit.com/api/vote';
+      $.post(upvote_url, {dir: dir, uh: modhash, id: tag}, function(data) {
+        if (dir === 0) {
+          upvote_link.removeClass('success');
+        } else {
+          upvote_link.addClass('success');
+        }
+      }).fail(function() {
+        me.on_upvote_fail(upvote_link, 'Could not upvote');
+      });
+    });
+  },
+
+  style_upvote_link: function(upvote_link, tag) {
+    var info_url = 'http://www.reddit.com/api/info/.json?id=' + tag;
+    $.getJSON(info_url, function(response) {
+      data = response.data;
+      if (!data) return;
+      var children = data.children;
+      if (!children || children.length < 1) return;
+      var item = children[0].data;
+      if (item.likes) {
+        upvote_link.addClass('success');
+        upvote_link.attr('title', 'Remove your upvote');
+      }
+    });
+  },
+
   display_notification: function(notification) {
     var li = $('<li class="hidden" id="' + notification.tag + '"></li>');
     var h3 = $('<h3></h3>');
@@ -85,11 +132,22 @@ var reddit_so_notifier_popup = {
     h3.append(title_link);
     li.append(h3);
 
+    var container = $('<div class="content-item"></div>');
+    var upvote_link = $('<a href="" class="upvote-link pull-right"></a>');
+    upvote_link.attr('title', 'Upvote this ' + notification.content_type);
+    this.style_upvote_link(upvote_link, notification.tag);
+    var me = this;
+    upvote_link.click(function() {
+      me.on_upvote_click(notification.tag, upvote_link);
+      return false;
+    });
+    container.append(upvote_link);
+
     var body_p = $('<p class="body"></p>');
     var body_link = $('<a href="">' + notification.body + '</a>');
     body_link.click(open_content_url);
     body_p.append(body_link);
-    li.append(body_p);
+    container.append(body_p);
 
     var footer_p = $('<p class="footer"></p>');
     var date = this.get_date_str(notification.timestamp);
@@ -118,7 +176,8 @@ var reddit_so_notifier_popup = {
       return false;
     });
     footer_p.append(subreddit_link);
-    li.append(footer_p);
+    container.append(footer_p);
+    li.append(container);
 
     if ($('ul li').length > 0) {
       $('ul').prepend(li);

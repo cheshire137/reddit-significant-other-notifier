@@ -31,6 +31,19 @@ a.btn.disabled, a.btn.disabled:hover, a.btn.disabled:focus {
   cursor: default;
   border-color: #ccc;
 }
+a.upvote-link {
+  display: inline-block;
+  width: 18px;
+  height: 20px;
+  margin-left: 10px;
+  background: url('glyphicons_213_up_arrow.png') no-repeat left center;
+}
+a.upvote-link.success {
+  background-image: url('upvote-success.png');
+}
+a.upvote-link.failure {
+  background-image: url('upvote-failure.png');
+}
 .alert {
   color: #468847;
   background-color: #dff0d8;
@@ -307,4 +320,9 @@ ul li:last-child {
   border-bottom: none;
   padding-bottom: 0;
   margin-bottom: 0;
+}
+.upvote-fail-reason {
+  font-size: 12px;
+  font-style: italic;
+  color: #791919;
 }
