@@ -11,7 +11,7 @@ past notifications will be displayed.
 
 ## Screenshots
 
-![Screenshot of Reddit Significant Other Notifier](http://github.com/moneypenny/reddit-significant-other-notifier/raw/master/screenshot.png)
+![Screenshot of Reddit Significant Other Notifier](https://raw.githubusercontent.com/cheshire137/reddit-significant-other-notifier/master/screenshot.png)
 
 ## To-do List
 
