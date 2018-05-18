@@ -7,8 +7,6 @@ checks periodically for new content from the specified user; you can choose how
 frequently it checks. Click the Reddit icon in your Chrome bar and a list of
 past notifications will be displayed.
 
-[Install from the Chrome Web Store](https://chrome.google.com/webstore/detail/reddit-significant-other/cmlhkpjnpfipcgieelfpclidefmhcfpo)
-
 ## Screenshots
 
 ![Screenshot of Reddit Significant Other Notifier](https://raw.githubusercontent.com/cheshire137/reddit-significant-other-notifier/master/screenshot.png)
